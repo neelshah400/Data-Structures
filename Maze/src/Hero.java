@@ -14,15 +14,24 @@ public class Hero {
         this.color = color;
     }
 
+    public Location getLoc() {
+        return loc;
+    }
+
+    public int getDir() {
+        return dir;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
     public Color getColor() {
         return color;
     }
 
-    public Shape getRect() {
-        int x = loc.getX();
-        int y = loc.getY();
-        Shape rect = new Rectangle(x * size + size, y * size + size, size, size);
-        return rect;
+    public Rectangle getRect() {
+        return new Rectangle(loc.getX() * size + size, loc.getY() * size + size, size, size);
     }
 
     public void move(int key, char[][] maze) {
@@ -40,7 +49,6 @@ public class Hero {
                             loc.changeX(1);
                         break;
                     case 2: // down
-                        System.out.println(x + ", " + y);
                         if (y < maze.length - 1 && maze[y + 1][x] == ' ')
                             loc.changeY(1);
                         break;
