@@ -53,7 +53,7 @@ public class MazeProgram extends JPanel implements KeyListener {
         else {
             walls = getWalls(5, 50);
             for (Wall wall : walls) {
-                g2.setColor(wall.getColor());
+                g2.setPaint(wall.getPaint());
                 if (wall.isFilled())
                     g2.fillPolygon(wall.getPoly());
                 else
@@ -70,8 +70,7 @@ public class MazeProgram extends JPanel implements KeyListener {
         int y = hero.getLoc().getY();
         int[] xCoordinates;
         int[] yCoordinates;
-        Color color;
-        
+
         int startX = 100;
         int endX = 800;
         int startY = 100;
@@ -79,77 +78,71 @@ public class MazeProgram extends JPanel implements KeyListener {
 
         for (int fov = 0; fov < depth; fov++) {
 
+            System.out.printf("Dir: %s, FOV: %s, X: %s, Y: %s\n", hero.getDir(), fov, x, y);
+
             // left rectangles
+            System.out.println("\tleft rectangle");
             xCoordinates = new int[] {startX + (size * fov), startX + (size * (fov + 1)), startX + (size * (fov + 1)), startX + (size * fov)};
             yCoordinates = new int[] {startY + (size * fov), startY + (size * fov), endY - (size * fov), endY - (size * fov)};
-            color = Color.DARK_GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, false));
+            list.add(new Wall("left rectangle", xCoordinates, yCoordinates, size, fov, false));
 
             // right rectangles
+            System.out.println("\tright rectangle");
             xCoordinates = new int[] {endX - (size * fov), endX - (size * (fov + 1)), endX - (size * (fov + 1)), endX - (size * fov)};
             yCoordinates = new int[] {startY + (size * (fov)), startY + (size * fov), endY - (size * fov), endY - (size * (fov))};
-            color = Color.DARK_GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, false));
+            list.add(new Wall("right rectangle", xCoordinates, yCoordinates, size, fov, false));
 
             // left trapezoids
-            if (    fov != 0 &&
-                    (hero.getDir() == 0 && y - fov >= 0 && x - 1 >= 0 && maze[y - fov][x - 1] == '#') ||
-                    (hero.getDir() == 1 && y - 1 >= 0 && x + fov <= maze[0].length - 1 && maze[y - 1][x + fov] == '#') ||
-                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && x + 1 <= maze[0].length - 1&& maze[y + fov][x + 1] == '#') ||
-                    (hero.getDir() == 3 && y + 1 <= maze.length - 1 && x - fov >= 0 && maze[y + 1][x - fov] == '#')
-            ) {
+            if (!(  (hero.getDir() == 0 && y - fov >= 0 && x - 1 >= 0 && maze[y - fov][x - 1] == ' ') ||
+                    (hero.getDir() == 1 && y - 1 >= 0 && x + fov <= maze[0].length - 1 && maze[y - 1][x + fov] == ' ') ||
+                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && x + 1 <= maze[0].length - 1&& maze[y + fov][x + 1] == ' ') ||
+                    (hero.getDir() == 3 && y + 1 <= maze.length - 1 && x - fov >= 0 && maze[y + 1][x - fov] == ' ')
+            )) {
+                System.out.println("\tleft trapezoid");
                 xCoordinates = new int[] {startX + (size * fov), startX + (size * (fov + 1)), startX + (size * (fov + 1)), startX + (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * fov), endY - (size * fov), endY - (size * (fov - 1))};
-                color = Color.GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, true));
-                color = Color.DARK_GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, false));
+                list.add(new Wall("left trapezoid", xCoordinates, yCoordinates, size, fov, true));
+                list.add(new Wall("left trapezoid", xCoordinates, yCoordinates, size, fov, false));
             }
 
             // right trapezoids
-            if (    fov != 0 &&
-                    (hero.getDir() == 0 && y - fov >= 0 && x + 1 <= maze[0].length - 1 && maze[y - fov][x + 1] == '#') ||
-                    (hero.getDir() == 1 && y + 1 <= maze.length - 1 && x + fov <= maze[0].length - 1 && maze[y + 1][x + fov] == '#') ||
-                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && x - 1 >= 0 && maze[y + fov][x - 1] == '#') ||
-                    (hero.getDir() == 3 && y - 1 >= 0 && x - fov <= maze[0].length - 1 && maze[y - 1][x - fov] == '#')
-            ) {
+            if (!(  (hero.getDir() == 0 && y - fov >= 0 && x + 1 <= maze[0].length - 1 && maze[y - fov][x + 1] == ' ') ||
+                    (hero.getDir() == 1 && y + 1 <= maze.length - 1 && x + fov <= maze[0].length - 1 && maze[y + 1][x + fov] == ' ') ||
+                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && x - 1 >= 0 && maze[y + fov][x - 1] == ' ') ||
+                    (hero.getDir() == 3 && y - 1 >= 0 && x - fov >= 0 && maze[y - 1][x - fov] == ' ')
+            )) {
+                System.out.println("\tright trapezoid");
                 xCoordinates = new int[] {endX - (size * fov), endX - (size * (fov + 1)), endX - (size * (fov + 1)), endX - (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * fov), endY - (size * fov), 700 - (size * (fov - 1))};
-                color = Color.GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, true));
-                color = Color.DARK_GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, false));
+                list.add(new Wall("right trapezoid", xCoordinates, yCoordinates, size, fov, true));
+                list.add(new Wall("right trapezoid", xCoordinates, yCoordinates, size, fov, false));
             }
 
             // top trapezoids
+            System.out.println("\ttop trapezoid");
             xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * (fov + 1)), startX + (size * (fov + 1))};
             yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * (fov - 1)), startY + (size * fov), startY + (size * fov)};
-            color = Color.GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, true));
-            color = Color.DARK_GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, false));
+            list.add(new Wall("top trapezoid", xCoordinates, yCoordinates, size, fov, true));
+            list.add(new Wall("top trapezoid", xCoordinates, yCoordinates, size, fov, false));
 
             // bottom trapezoids
+            System.out.println("\tbottom trapezoid");
             xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * (fov + 1)), startX + (size * (fov + 1))};
             yCoordinates = new int[] {endY - (size * (fov - 1)), endY - (size * (fov - 1)), endY - (size * fov), endY - (size * fov)};
-            color = Color.GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, true));
-            color = Color.DARK_GRAY;
-            list.add(new Wall(xCoordinates, yCoordinates, color, false));
+            list.add(new Wall("bottom trapezoid", xCoordinates, yCoordinates, size, fov, true));
+            list.add(new Wall("bottom trapezoid", xCoordinates, yCoordinates, size, fov, false));
 
             // square
-            if (    (hero.getDir() == 0 && y - fov >= 0 && maze[y - fov][x] == '#') ||
-                    (hero.getDir() == 1 && x + fov <= maze[0].length - 1 && maze[y][x + fov] == '#') ||
-                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && maze[y + fov][x] == '#') ||
-                    (hero.getDir() == 3 && x - fov >= 0 && maze[y][x - fov] == '#')
-            ) {
-                System.out.println(fov);
+            if (!(  (hero.getDir() == 0 && y - fov >= 0 && maze[y - fov][x] == ' ') ||
+                    (hero.getDir() == 1 && x + fov <= maze[0].length - 1 && maze[y][x + fov] == ' ') ||
+                    (hero.getDir() == 2 && y + fov <= maze.length - 1 && maze[y + fov][x] == ' ') ||
+                    (hero.getDir() == 3 && x - fov >= 0 && maze[y][x - fov] == ' ')
+            )) {
+                System.out.println("\tsquare");
                 xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * fov), startX + (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * (fov - 1)), endY - (size * (fov - 1)), endY - (size * (fov - 1))};
-                color = Color.GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, true));
-                color = Color.DARK_GRAY;
-                list.add(new Wall(xCoordinates, yCoordinates, color, false));
+                list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true));
+                list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, false));
                 break;
             }
 

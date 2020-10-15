@@ -35,7 +35,7 @@ public class TimeTravel {
 
     public String getFormattedDateTime(Calendar calendar) {
         Date date = calendar.getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat("h:m a' on 'M/d/yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a' on 'M/d/yyyy");
         return sdf.format(date);
     }
 
