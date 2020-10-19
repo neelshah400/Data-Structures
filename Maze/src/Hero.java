@@ -5,13 +5,15 @@ public class Hero {
     private Location loc;
     private int dir;
     private int size;
-    Color color;
+    private Color color;
+    private int moves;
 
     public Hero(Location loc, int dir, int size, Color color) {
         this.loc = loc;
         this.dir = dir;
         this.size = size;
         this.color = color;
+        moves = 0;
     }
 
     public Location getLoc() {
@@ -22,12 +24,12 @@ public class Hero {
         return dir;
     }
 
-    public int getSize() {
-        return size;
-    }
-
     public Color getColor() {
         return color;
+    }
+
+    public int getMoves() {
+        return moves;
     }
 
     public Rectangle getRect() {
@@ -41,20 +43,28 @@ public class Hero {
             case 38: // move forward
                 switch(dir) {
                     case 0: // up
-                        if (y > 0 && maze[y-1][x] == ' ')
+                        if (y > 0 && maze[y-1][x] == ' ') {
                             loc.changeY(-1);
+                            moves++;
+                        }
                         break;
                     case 1: // right
-                        if (x < maze[y].length - 1 && maze[y][x + 1] == ' ')
+                        if (x < maze[y].length - 1 && maze[y][x + 1] == ' ') {
                             loc.changeX(1);
+                            moves++;
+                        }
                         break;
                     case 2: // down
-                        if (y < maze.length - 1 && maze[y + 1][x] == ' ')
+                        if (y < maze.length - 1 && maze[y + 1][x] == ' ') {
                             loc.changeY(1);
+                            moves++;
+                        }
                         break;
                     case 3: // left
-                        if (x > 0 && maze[y][x - 1] == ' ')
+                        if (x > 0 && maze[y][x - 1] == ' ') {
                             loc.changeX(-1);
+                            moves++;
+                        }
                         break;
                     default:
                         break;

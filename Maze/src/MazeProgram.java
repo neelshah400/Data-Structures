@@ -16,12 +16,13 @@ public class MazeProgram extends JPanel implements KeyListener {
     public MazeProgram() {
 
         fillMaze();
-        hero = new Hero(new Location(0, 1), 1, size, Color.RED);
+//        hero = new Hero(new Location(0, 1), 1, size, Color.RED);
+        hero = new Hero(new Location(5, 45), 3, size, Color.RED); // start near end (for testing purposes)
         walls = getWalls(5, 50);
 
         frame = new JFrame("Maze");
         frame.add(this);
-        frame.setSize(1200, 800);
+        frame.setSize(1400, 800);
         frame.addKeyListener(this);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
@@ -32,9 +33,26 @@ public class MazeProgram extends JPanel implements KeyListener {
 
         super.paintComponent(g); // giant eraser
         Graphics2D g2 = (Graphics2D) g;
+        g2.setFont(new Font("Courier", Font.PLAIN, 36));
 
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, frame.getWidth(), frame.getHeight());
+
+        g2.setColor(Color.PINK);
+        g2.drawString("Moves: " + hero.getMoves(), 1150, 50);
+
+        int heroX = hero.getLoc().getX();
+        int heroY = hero.getLoc().getY();
+        if (hero.getMoves() != 0 && (heroX == 0 || heroX == maze[0].length - 1 || heroY == 0 || heroY == maze.length - 1)) {
+            g2.setColor(Color.GREEN);
+            g2.drawString("You win!", 1150, 150);
+        }
+
+//        g2.setColor(Color.BLUE);
+//        switch (hero.getDir()) {
+//
+//        }
+//        g2.fillPolygon(new int[] {}, new int[] {}, 3);
 
         if (!use3D) {
             g2.setColor(Color.GRAY);
@@ -46,7 +64,6 @@ public class MazeProgram extends JPanel implements KeyListener {
                         g2.drawRect(x * size + size, y * size + size, size, size);
                 }
             }
-
             g2.setColor(hero.getColor());
             g2.fill(hero.getRect());
         }
