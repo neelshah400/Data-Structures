@@ -3,21 +3,33 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MazeProgram extends JPanel implements KeyListener {
 
     char[][] maze = new char[52][78];
     Hero hero;
+    ArrayList<Monster> monsters;
     ArrayList<Wall> walls;
+    String[] directions = {"N", "E", "S", "W"};
+
     JFrame frame;
+    Font font;
+
     int size = 14;
     boolean use3D = false;
+
+    ScheduledExecutorService service;
+    Runnable moveMonster;
 
     public MazeProgram() {
 
         fillMaze();
-//        hero = new Hero(new Location(0, 1), 1, size, Color.RED);
-        hero = new Hero(new Location(5, 45), 3, size, Color.RED); // start near end (for testing purposes)
+        hero = new Hero(new Location(0, 1), 1, size, Color.GREEN);
+        // hero = new Hero(new Location(5, 45), 3, size, Color.GREEN); // start near end (for testing purposes)
+        monsters = getMonsters(10);
         walls = getWalls(5, 50);
 
         frame = new JFrame("Maze");
@@ -26,6 +38,18 @@ public class MazeProgram extends JPanel implements KeyListener {
         frame.addKeyListener(this);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        font = new Font("Courier", Font.PLAIN, 36);
+
+        service = Executors.newSingleThreadScheduledExecutor();
+        for (Monster monster : monsters) {
+            service.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    monster.move(maze);
+                    repaint();
+                }
+            }, 1000, monster.getSpeed(), TimeUnit.MILLISECONDS);
+        }
 
     }
 
@@ -33,26 +57,31 @@ public class MazeProgram extends JPanel implements KeyListener {
 
         super.paintComponent(g); // giant eraser
         Graphics2D g2 = (Graphics2D) g;
-        g2.setFont(new Font("Courier", Font.PLAIN, 36));
+        g2.setFont(font);
 
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, frame.getWidth(), frame.getHeight());
 
         g2.setColor(Color.PINK);
         g2.drawString("Moves: " + hero.getMoves(), 1150, 50);
+        g2.drawString("Direction: " + directions[hero.getDir()], 1150, 100);
 
         int heroX = hero.getLoc().getX();
         int heroY = hero.getLoc().getY();
-        if (hero.getMoves() != 0 && (heroX == 0 || heroX == maze[0].length - 1 || heroY == 0 || heroY == maze.length - 1)) {
+        for (Monster monster : monsters) {
+            int monsterX = monster.getLoc().getX();
+            int monsterY = monster.getLoc().getY();
+            if (heroX == monsterX && heroY == monsterY) {
+                g2.setColor(Color.RED);
+                g2.drawString("You lose!", 1150, 150);
+                service.shutdown();
+            }
+        }
+        if (!service.isShutdown() && hero.getMoves() != 0 && (heroX == 0 || heroX == maze[0].length - 1 || heroY == 0 || heroY == maze.length - 1) && !(heroX == 0 && heroY == 1)) {
             g2.setColor(Color.GREEN);
             g2.drawString("You win!", 1150, 150);
+            service.shutdown();
         }
-
-//        g2.setColor(Color.BLUE);
-//        switch (hero.getDir()) {
-//
-//        }
-//        g2.fillPolygon(new int[] {}, new int[] {}, 3);
 
         if (!use3D) {
             g2.setColor(Color.GRAY);
@@ -66,8 +95,46 @@ public class MazeProgram extends JPanel implements KeyListener {
             }
             g2.setColor(hero.getColor());
             g2.fill(hero.getRect());
+            for (Monster monster : monsters) {
+                g2.setColor(monster.getColor());
+                g2.fill(monster.getRect());
+            }
         }
         else {
+
+            int offsetX = 1150;
+            int offsetY = 150;
+
+            g2.setColor(Color.GRAY);
+            for (int y = heroY - 2; y <= heroY + 2; y++) {
+                for (int x = heroX - 2; x <= heroX + 2; x++) {
+                    int drawX = x - (heroX - 2);
+                    int drawY = y - (heroY - 2);
+                    try {
+                        if (maze[y][x] == ' ')
+                            g2.fillRect(drawX * size + size + offsetX, drawY * size + size + offsetY, size, size);
+                        else
+                            g2.drawRect(drawX * size + size + offsetX, drawY * size + size + offsetY, size, size);
+                    } catch (IndexOutOfBoundsException ignored) {
+
+                    }
+                }
+            }
+
+            g2.setColor(hero.getColor());
+            g2.fill(hero.getRect(2, 2, offsetX, offsetY));
+
+            for (Monster monster : monsters) {
+                int monsterX = monster.getLoc().getX();
+                int monsterY = monster.getLoc().getY();
+                int relX = monsterX - (heroX - 2);
+                int relY = monsterY - (heroY - 2);
+                if (relX >= 0 && relX <= 4 && relY >= 0 && relY <= 4) {
+                    g2.setColor(monster.getColor());
+                    g2.fill(monster.getRect(relX, relY, offsetX, offsetY));
+                }
+            }
+
             walls = getWalls(5, 50);
             for (Wall wall : walls) {
                 g2.setPaint(wall.getPaint());
@@ -76,8 +143,30 @@ public class MazeProgram extends JPanel implements KeyListener {
                 else
                     g2.drawPolygon(wall.getPoly());
             }
+
         }
 
+    }
+
+    public ArrayList<Monster> getMonsters(int n) {
+        ArrayList<Monster> monsters = new ArrayList<Monster>();
+        ArrayList<Location> locations = new ArrayList<Location>();
+        locations.add(hero.getLoc());
+        for (int i = 0; i < n; i++) {
+            int y = -1;
+            int x = -1;
+            Location loc;
+            int dir = -1;
+            do {
+                y = (int)(Math.random() * maze.length);
+                x = (int)(Math.random() * maze[0].length);
+                loc = new Location(x, y);
+                dir = (int)(Math.random() * 4);
+            } while (maze[y][x] != ' ' && !locations.contains(loc));
+            monsters.add(new Monster(loc, dir, size, Color.RED));
+            locations.add(loc);
+        }
+        return monsters;
     }
 
     public ArrayList<Wall> getWalls(int depth, int size) {
@@ -98,13 +187,11 @@ public class MazeProgram extends JPanel implements KeyListener {
             System.out.printf("Dir: %s, FOV: %s, X: %s, Y: %s\n", hero.getDir(), fov, x, y);
 
             // left rectangles
-            System.out.println("\tleft rectangle");
             xCoordinates = new int[] {startX + (size * fov), startX + (size * (fov + 1)), startX + (size * (fov + 1)), startX + (size * fov)};
             yCoordinates = new int[] {startY + (size * fov), startY + (size * fov), endY - (size * fov), endY - (size * fov)};
             list.add(new Wall("left rectangle", xCoordinates, yCoordinates, size, fov, false));
 
             // right rectangles
-            System.out.println("\tright rectangle");
             xCoordinates = new int[] {endX - (size * fov), endX - (size * (fov + 1)), endX - (size * (fov + 1)), endX - (size * fov)};
             yCoordinates = new int[] {startY + (size * (fov)), startY + (size * fov), endY - (size * fov), endY - (size * (fov))};
             list.add(new Wall("right rectangle", xCoordinates, yCoordinates, size, fov, false));
@@ -115,7 +202,6 @@ public class MazeProgram extends JPanel implements KeyListener {
                     (hero.getDir() == 2 && y + fov <= maze.length - 1 && x + 1 <= maze[0].length - 1&& maze[y + fov][x + 1] == ' ') ||
                     (hero.getDir() == 3 && y + 1 <= maze.length - 1 && x - fov >= 0 && maze[y + 1][x - fov] == ' ')
             )) {
-                System.out.println("\tleft trapezoid");
                 xCoordinates = new int[] {startX + (size * fov), startX + (size * (fov + 1)), startX + (size * (fov + 1)), startX + (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * fov), endY - (size * fov), endY - (size * (fov - 1))};
                 list.add(new Wall("left trapezoid", xCoordinates, yCoordinates, size, fov, true));
@@ -128,7 +214,6 @@ public class MazeProgram extends JPanel implements KeyListener {
                     (hero.getDir() == 2 && y + fov <= maze.length - 1 && x - 1 >= 0 && maze[y + fov][x - 1] == ' ') ||
                     (hero.getDir() == 3 && y - 1 >= 0 && x - fov >= 0 && maze[y - 1][x - fov] == ' ')
             )) {
-                System.out.println("\tright trapezoid");
                 xCoordinates = new int[] {endX - (size * fov), endX - (size * (fov + 1)), endX - (size * (fov + 1)), endX - (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * fov), endY - (size * fov), 700 - (size * (fov - 1))};
                 list.add(new Wall("right trapezoid", xCoordinates, yCoordinates, size, fov, true));
@@ -136,14 +221,12 @@ public class MazeProgram extends JPanel implements KeyListener {
             }
 
             // top trapezoids
-            System.out.println("\ttop trapezoid");
             xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * (fov + 1)), startX + (size * (fov + 1))};
             yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * (fov - 1)), startY + (size * fov), startY + (size * fov)};
             list.add(new Wall("top trapezoid", xCoordinates, yCoordinates, size, fov, true));
             list.add(new Wall("top trapezoid", xCoordinates, yCoordinates, size, fov, false));
 
             // bottom trapezoids
-            System.out.println("\tbottom trapezoid");
             xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * (fov + 1)), startX + (size * (fov + 1))};
             yCoordinates = new int[] {endY - (size * (fov - 1)), endY - (size * (fov - 1)), endY - (size * fov), endY - (size * fov)};
             list.add(new Wall("bottom trapezoid", xCoordinates, yCoordinates, size, fov, true));
@@ -155,7 +238,6 @@ public class MazeProgram extends JPanel implements KeyListener {
                     (hero.getDir() == 2 && y + fov <= maze.length - 1 && maze[y + fov][x] == ' ') ||
                     (hero.getDir() == 3 && x - fov >= 0 && maze[y][x - fov] == ' ')
             )) {
-                System.out.println("\tsquare");
                 xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * fov), startX + (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * (fov - 1)), endY - (size * (fov - 1)), endY - (size * (fov - 1))};
                 list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true));
@@ -186,9 +268,9 @@ public class MazeProgram extends JPanel implements KeyListener {
     }
 
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == 32)
+        if (e.getKeyCode() == 32) // space bar
             use3D = !use3D;
-        else
+        else if (!service.isShutdown())
             hero.move(e.getKeyCode(), maze);
         repaint();
     }

@@ -27,7 +27,7 @@ public class Wall {
     }
 
     public GradientPaint getPaint() {
-        int factor = size / 2;
+        int factor = (int) (size * 0.8);
         int start = 205;
         int end = 205;
         if (filled) {

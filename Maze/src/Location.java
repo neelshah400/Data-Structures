@@ -1,4 +1,4 @@
-public class Location {
+public class Location implements Comparable<Location> {
 
     private int x;
     private int y;
@@ -22,6 +22,10 @@ public class Location {
 
     public void changeY(int delta) {
         y += delta;
+    }
+
+    public int compareTo(Location l) {
+        return x == l.x && y == l.y ? 0 : -1;
     }
 
 }

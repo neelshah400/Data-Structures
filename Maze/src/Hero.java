@@ -33,7 +33,11 @@ public class Hero {
     }
 
     public Rectangle getRect() {
-        return new Rectangle(loc.getX() * size + size, loc.getY() * size + size, size, size);
+        return getRect(loc.getX(), loc.getY(), 0, 0);
+    }
+
+    public Rectangle getRect(int relX, int relY, int offsetX, int offsetY) {
+        return new Rectangle(relX * size + size + offsetX, relY * size + size + offsetY, size, size);
     }
 
     public void move(int key, char[][] maze) {
