@@ -20,15 +20,18 @@ public class MazeProgram extends JPanel implements KeyListener {
 
     int size = 14;
     boolean use3D = false;
+    boolean won = false;
+
+    Location start = new Location(0, 1);
+//    Location start = new Location(5, 45); // start near end (for testing purposes)
+    Location end = new Location(0, 45);
 
     ScheduledExecutorService service;
-    Runnable moveMonster;
 
     public MazeProgram() {
 
         fillMaze();
-        hero = new Hero(new Location(0, 1), 1, size, Color.GREEN);
-        // hero = new Hero(new Location(5, 45), 3, size, Color.GREEN); // start near end (for testing purposes)
+        hero = new Hero(new Location(start.getX(), start.getY()), 1, size, Color.GREEN);
         monsters = getMonsters(10);
         walls = getWalls(5, 50);
 
@@ -42,12 +45,9 @@ public class MazeProgram extends JPanel implements KeyListener {
 
         service = Executors.newSingleThreadScheduledExecutor();
         for (Monster monster : monsters) {
-            service.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    monster.move(maze);
-                    repaint();
-                }
+            service.scheduleAtFixedRate(() -> {
+                monster.move(maze);
+                repaint();
             }, 1000, monster.getSpeed(), TimeUnit.MILLISECONDS);
         }
 
@@ -77,7 +77,10 @@ public class MazeProgram extends JPanel implements KeyListener {
                 service.shutdown();
             }
         }
-        if (!service.isShutdown() && hero.getMoves() != 0 && (heroX == 0 || heroX == maze[0].length - 1 || heroY == 0 || heroY == maze.length - 1) && !(heroX == 0 && heroY == 1)) {
+        if (!service.isShutdown() && hero.getMoves() != 0 && heroX == end.getX() && heroY == end.getY())
+            won = true;
+
+        if (won) {
             g2.setColor(Color.GREEN);
             g2.drawString("You win!", 1150, 150);
             service.shutdown();
@@ -103,7 +106,7 @@ public class MazeProgram extends JPanel implements KeyListener {
         else {
 
             int offsetX = 1150;
-            int offsetY = 150;
+            int offsetY = 200;
 
             g2.setColor(Color.GRAY);
             for (int y = heroY - 2; y <= heroY + 2; y++) {
@@ -137,7 +140,10 @@ public class MazeProgram extends JPanel implements KeyListener {
 
             walls = getWalls(5, 50);
             for (Wall wall : walls) {
-                g2.setPaint(wall.getPaint());
+                if (wall.getSpecialColor() != null)
+                    g2.setColor(wall.getSpecialColor());
+                else
+                    g2.setPaint(wall.getPaint());
                 if (wall.isFilled())
                     g2.fillPolygon(wall.getPoly());
                 else
@@ -183,8 +189,6 @@ public class MazeProgram extends JPanel implements KeyListener {
         int endY = 700;
 
         for (int fov = 0; fov < depth; fov++) {
-
-            System.out.printf("Dir: %s, FOV: %s, X: %s, Y: %s\n", hero.getDir(), fov, x, y);
 
             // left rectangles
             xCoordinates = new int[] {startX + (size * fov), startX + (size * (fov + 1)), startX + (size * (fov + 1)), startX + (size * fov)};
@@ -240,7 +244,12 @@ public class MazeProgram extends JPanel implements KeyListener {
             )) {
                 xCoordinates = new int[] {startX + (size * fov), endX - (size * fov), endX - (size * fov), startX + (size * fov)};
                 yCoordinates = new int[] {startY + (size * (fov - 1)), startY + (size * (fov - 1)), endY - (size * (fov - 1)), endY - (size * (fov - 1))};
-                list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true));
+                if (getSpecialWallCondition(hero.getDir(), x, y, fov, start))
+                    list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true, Color.BLACK)); // make start of maze black
+                else if (getSpecialWallCondition(hero.getDir(), x, y, fov, end))
+                    list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true, Color.BLACK)); // make end of maze black
+                else
+                    list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, true));
                 list.add(new Wall("square", xCoordinates, yCoordinates, size, fov, false));
                 break;
             }
@@ -249,6 +258,14 @@ public class MazeProgram extends JPanel implements KeyListener {
 
         return list;
 
+    }
+
+    public boolean getSpecialWallCondition(int dir, int x, int y, int fov, Location loc) {
+        return ((dir == 0 && y - fov == loc.getY() && x == loc.getX() - 1) ||
+                (dir == 1 && y == loc.getY() && x + fov == loc.getX() - 1) ||
+                (dir == 2 && y + fov == loc.getY() && x == loc.getX() - 1) ||
+                (dir == 3 && y == loc.getY() && x - fov == loc.getX() - 1)
+        );
     }
 
     public void fillMaze() {

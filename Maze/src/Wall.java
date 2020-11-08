@@ -2,12 +2,13 @@ import java.awt.*;
 
 public class Wall {
 
-    String name;
+    private String name;
     private int[] xCoordinates;
     private int[] yCoordinates;
-    int size;
-    int fov;
-    Boolean filled;
+    private int size;
+    private int fov;
+    private Boolean filled;
+    private Color specialColor;
 
     public Wall(String name, int[] xCoordinates, int[] yCoordinates, int size, int fov, Boolean filled) {
         this.name = name;
@@ -18,12 +19,21 @@ public class Wall {
         this.filled = filled;
     }
 
+    public Wall(String name, int[] xCoordinates, int[] yCoordinates, int size, int fov, Boolean filled, Color specialColor) {
+        this(name, xCoordinates, yCoordinates, size, fov, filled);
+        this.specialColor = specialColor;
+    }
+
     public Boolean isFilled() {
         return filled;
     }
 
     public Polygon getPoly() {
         return new Polygon(xCoordinates, yCoordinates, xCoordinates.length);
+    }
+
+    public Color getSpecialColor() {
+        return specialColor;
     }
 
     public GradientPaint getPaint() {

@@ -21,10 +21,6 @@ public class Monster {
         return loc;
     }
 
-    public int getDir() {
-        return dir;
-    }
-
     public Color getColor() {
         return color;
     }
