@@ -53,8 +53,8 @@ public class WordQueue {
         }
 
         public int compareTo(Word otherWord) {
-//            return -1 * text.compareTo(otherWord.text); // ascending
-            return -1 * text.toLowerCase().compareTo(otherWord.text.toLowerCase()); // descending
+//            return text.compareToIgnoreCase(otherWord.text); // ascending
+            return -1 * text.compareToIgnoreCase(otherWord.text); // descending
         }
 
     }
