@@ -70,11 +70,13 @@ public class SuperList<E> {
     }
 
     public void pop() {
-
+        end = end.getPrevious();
+        end.setNext(null);
     }
 
     public void poll() {
-
+        root = root.getNext();
+        root.setPrevious(null);
     }
 
     public E stackPeek() {
