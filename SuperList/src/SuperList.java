@@ -4,17 +4,13 @@ public class SuperList<E> {
     private ListNode<E> end;
 
     public SuperList() {
-        root = new ListNode<E>(null);
-        end = new ListNode<E>(null);
-        root.setNext(end);
-        end.setPrevious(root);
+        root = null;
+        end = null;
     }
 
     public SuperList(E value) {
         root = new ListNode<E>(value);
-        end = new ListNode<E>(null);
-        root.setNext(end);
-        end.setPrevious(root);
+        end = root;
     }
 
     public ListNode<E> getRoot() {
@@ -34,12 +30,34 @@ public class SuperList<E> {
     }
 
     public void add(E value) {
-        if (root.getValue() == null)
-            root.setValue(value);
+        if (root == null && end == null) {
+            root = new ListNode<E>(value);
+            end = root;
+        }
         else {
             ListNode<E> newNode = new ListNode<E>(value);
-            ListNode<E> previousNode = end.getPrevious();
-            ListNode<E> nextNode = end;
+            newNode.setPrevious(end);
+            end.setNext(newNode);
+            end = newNode;
+        }
+    }
+
+    public void add(int index, E value) throws ArrayIndexOutOfBoundsException {
+        ListNode<E> newNode = new ListNode<E>(value);
+        if (index == 0 && root == null && end == null) {
+            root = new ListNode<E>(value);
+            end = root;
+        }
+        else if (index == 0) {
+            newNode.setNext(root);
+            root.setPrevious(newNode);
+            root = newNode;
+        }
+        else {
+            ListNode<E> previousNode = root;
+            for (int i = 0; i < index - 1; i++)
+                previousNode = previousNode.getNext();
+            ListNode<E> nextNode = previousNode.getNext();
             newNode.setPrevious(previousNode);
             newNode.setNext(nextNode);
             previousNode.setNext(newNode);
@@ -47,23 +65,55 @@ public class SuperList<E> {
         }
     }
 
-    public void add(int index, E value) throws ArrayIndexOutOfBoundsException {
-        ListNode<E> newNode = new ListNode<E>(value);
-        ListNode<E> previousNode = root;
-        for (int i = 0; i < index - 1; i++)
-            previousNode = previousNode.getNext();
-        ListNode<E> nextNode = previousNode.getNext();
-        newNode.setPrevious(previousNode);
-        newNode.setNext(nextNode);
-        previousNode.setNext(newNode);
-        nextNode.setPrevious(newNode);
+    public void push(E value) {
+        add(value);
+    }
+
+    public void pop() {
+
+    }
+
+    public void poll() {
+
+    }
+
+    public E stackPeek() {
+        return end.getValue();
+    }
+
+    public E queuePeek() {
+        return root.getValue();
+    }
+
+    public E get(int index) throws ArrayIndexOutOfBoundsException {
+        return null;
+    }
+
+    public int size() {
+        return -1;
+    }
+
+    public void remove(int index) throws ArrayIndexOutOfBoundsException {
+
+    }
+
+    public boolean isEmpty() {
+        return false;
+    }
+
+    public void clear() {
+
+    }
+
+    public boolean contains(E value) {
+        return false;
     }
 
     public String toString() {
         String str = "[";
         for (ListNode<E> node = root; node.hasNext(); node = node.getNext())
             str += node.getValue() + ", ";
-        str += end.getPrevious().getValue() + "]";
+        str += end.getValue() + "]";
         return str;
     }
 
