@@ -2,15 +2,18 @@ public class SuperList<E> {
 
     private ListNode<E> root;
     private ListNode<E> end;
+    private int size;
 
     public SuperList() {
         root = null;
         end = null;
+        size = 0;
     }
 
     public SuperList(E value) {
         root = new ListNode<E>(value);
         end = root;
+        size = 1;
     }
 
     public ListNode<E> getRoot() {
@@ -40,6 +43,7 @@ public class SuperList<E> {
             end.setNext(newNode);
             end = newNode;
         }
+        size++;
     }
 
     public void add(int index, E value) throws ArrayIndexOutOfBoundsException {
@@ -63,20 +67,27 @@ public class SuperList<E> {
             previousNode.setNext(newNode);
             nextNode.setPrevious(newNode);
         }
+        size++;
     }
 
     public void push(E value) {
         add(value);
     }
 
-    public void pop() {
+    public E pop() {
+        E value = end.getValue();
         end = end.getPrevious();
         end.setNext(null);
+        size--;
+        return value;
     }
 
-    public void poll() {
+    public E poll() {
+        E value = root.getValue();
         root = root.getNext();
         root.setPrevious(null);
+        size--;
+        return value;
     }
 
     public E stackPeek() {
@@ -92,15 +103,15 @@ public class SuperList<E> {
     }
 
     public int size() {
+        return size;
+    }
+
+    public int remove(int index) throws ArrayIndexOutOfBoundsException {
         return -1;
     }
 
-    public void remove(int index) throws ArrayIndexOutOfBoundsException {
-
-    }
-
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
 
     public void clear() {
