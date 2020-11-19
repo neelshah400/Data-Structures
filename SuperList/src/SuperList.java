@@ -1,3 +1,5 @@
+import java.util.EmptyStackException;
+
 public class SuperList<E> {
 
     private ListNode<E> root;
@@ -33,7 +35,7 @@ public class SuperList<E> {
     }
 
     public void add(E value) {
-        if (root == null && end == null) {
+        if (isEmpty()) {
             root = new ListNode<E>(value);
             end = root;
         }
@@ -46,17 +48,23 @@ public class SuperList<E> {
         size++;
     }
 
-    public void add(int index, E value) throws ArrayIndexOutOfBoundsException {
+    public void add(int index, E value) {
+        if (index > size)
+            throw new ArrayIndexOutOfBoundsException();
         ListNode<E> newNode = new ListNode<E>(value);
-        if (index == 0 && root == null && end == null) {
+        if (index == 0 && isEmpty()) {
             root = new ListNode<E>(value);
             end = root;
+            size++;
         }
         else if (index == 0) {
             newNode.setNext(root);
             root.setPrevious(newNode);
             root = newNode;
+            size++;
         }
+        else if (index == size)
+            add(value);
         else {
             ListNode<E> previousNode = root;
             for (int i = 0; i < index - 1; i++)
@@ -66,8 +74,8 @@ public class SuperList<E> {
             newNode.setNext(nextNode);
             previousNode.setNext(newNode);
             nextNode.setPrevious(newNode);
+            size++;
         }
-        size++;
     }
 
     public void push(E value) {
@@ -75,39 +83,80 @@ public class SuperList<E> {
     }
 
     public E pop() {
+        if (isEmpty())
+            throw new EmptyStackException();
         E value = end.getValue();
-        end = end.getPrevious();
-        end.setNext(null);
+        if (end.hasPrevious()) {
+            end = end.getPrevious();
+            end.setNext(null);
+        }
+        else {
+            end = null;
+            root = null;
+        }
         size--;
         return value;
     }
 
     public E poll() {
+        if (isEmpty())
+            return null;
         E value = root.getValue();
-        root = root.getNext();
-        root.setPrevious(null);
+        if (root.hasNext()) {
+            root = root.getNext();
+            root.setPrevious(null);
+        }
+        else {
+            root = null;
+            end = null;
+        }
         size--;
         return value;
     }
 
     public E stackPeek() {
-        return end.getValue();
+        return end == null ? null : end.getValue();
     }
 
     public E queuePeek() {
-        return root.getValue();
+        return root == null ? null : root.getValue();
     }
 
-    public E get(int index) throws ArrayIndexOutOfBoundsException {
-        return null;
+    public E get(int index) {
+        if (index > size - 1)
+            throw new ArrayIndexOutOfBoundsException();
+        ListNode<E> node = root;
+        for (int i = 0; i < index - 1; i++) {
+            if (node.hasNext())
+                node = node.getNext();
+        }
+        return node.getValue();
     }
 
     public int size() {
         return size;
     }
 
-    public int remove(int index) throws ArrayIndexOutOfBoundsException {
-        return -1;
+    public E remove(int index) {
+        if (index > size - 1)
+            throw new ArrayIndexOutOfBoundsException();
+        if (index == 0)
+            return poll();
+        if (index == size - 1)
+            return pop();
+        ListNode<E> node = root;
+        for (int i = 0; i < index - 1; i++) {
+            if (node.hasNext())
+                node = node.getNext();
+        }
+//        System.out.println("\n" + toString());
+//        System.out.println(node);
+        ListNode<E> previousNode = node.getPrevious();
+        ListNode<E> nextNode = node.getNext();
+        previousNode.setNext(nextNode);
+        nextNode.setPrevious(previousNode);
+        size--;
+        return node.getValue();
     }
 
     public boolean isEmpty() {
@@ -170,6 +219,17 @@ public class SuperList<E> {
 
         public boolean hasNext() {
             return next != null && next.getValue() != null;
+        }
+
+        // temporary
+        public String toString() {
+            String str = "";
+            str += hasPrevious() ? previous.getValue() + "" : "null";
+            str += " | ";
+            str += value + "";
+            str += " | ";
+            str += hasNext() ? next.getValue() + "" : "null";
+            return str;
         }
 
     }
