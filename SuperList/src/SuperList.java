@@ -38,8 +38,7 @@ public class SuperList<E> {
         if (isEmpty()) {
             root = new ListNode<E>(value);
             end = root;
-        }
-        else {
+        } else {
             ListNode<E> newNode = new ListNode<E>(value);
             newNode.setPrevious(end);
             end.setNext(newNode);
@@ -49,21 +48,20 @@ public class SuperList<E> {
     }
 
     public void add(int index, E value) {
-        if (index > size)
+        if (index < 0 || index > size)
             throw new ArrayIndexOutOfBoundsException();
         ListNode<E> newNode = new ListNode<E>(value);
-        if (index == 0 && isEmpty()) {
-            root = new ListNode<E>(value);
-            end = root;
+        if (index == 0) {
+            if (isEmpty()) {
+                root = new ListNode<E>(value);
+                end = root;
+            } else {
+                newNode.setNext(root);
+                root.setPrevious(newNode);
+                root = newNode;
+            }
             size++;
-        }
-        else if (index == 0) {
-            newNode.setNext(root);
-            root.setPrevious(newNode);
-            root = newNode;
-            size++;
-        }
-        else if (index == size)
+        } else if (index == size)
             add(value);
         else {
             ListNode<E> previousNode = root;
@@ -89,8 +87,7 @@ public class SuperList<E> {
         if (end.hasPrevious()) {
             end = end.getPrevious();
             end.setNext(null);
-        }
-        else {
+        } else {
             end = null;
             root = null;
         }
@@ -105,8 +102,7 @@ public class SuperList<E> {
         if (root.hasNext()) {
             root = root.getNext();
             root.setPrevious(null);
-        }
-        else {
+        } else {
             root = null;
             end = null;
         }
@@ -114,19 +110,32 @@ public class SuperList<E> {
         return value;
     }
 
+    // In the instructions, you named the methods stackPeek() and queuePeek(),
+    // but in the sample runners you provided, you called them peekStack() and
+    // peekQueue(). I decided to make duplicate versions for ease of testing
+    // the code.
+
     public E stackPeek() {
         return end == null ? null : end.getValue();
+    }
+
+    public E peekStack() {
+        return stackPeek();
     }
 
     public E queuePeek() {
         return root == null ? null : root.getValue();
     }
 
+    public E peekQueue() {
+        return queuePeek();
+    }
+
     public E get(int index) {
-        if (index > size - 1)
+        if (index < 0 || index > size - 1)
             throw new ArrayIndexOutOfBoundsException();
         ListNode<E> node = root;
-        for (int i = 0; i < index - 1; i++) {
+        for (int i = 0; i < index; i++) {
             if (node.hasNext())
                 node = node.getNext();
         }
@@ -138,19 +147,17 @@ public class SuperList<E> {
     }
 
     public E remove(int index) {
-        if (index > size - 1)
+        if (index < 0 || index > size - 1)
             throw new ArrayIndexOutOfBoundsException();
-        if (index == 0)
+        else if (index == 0)
             return poll();
-        if (index == size - 1)
+        else if (index == size - 1)
             return pop();
         ListNode<E> node = root;
-        for (int i = 0; i < index - 1; i++) {
+        for (int i = 0; i < index; i++) {
             if (node.hasNext())
                 node = node.getNext();
         }
-//        System.out.println("\n" + toString());
-//        System.out.println(node);
         ListNode<E> previousNode = node.getPrevious();
         ListNode<E> nextNode = node.getNext();
         previousNode.setNext(nextNode);
@@ -164,18 +171,27 @@ public class SuperList<E> {
     }
 
     public void clear() {
-
+        root = null;
+        end = null;
+        size = 0;
     }
 
     public boolean contains(E value) {
-        return false;
+        for (ListNode<E> node = root; node.hasNext(); node = node.getNext()) {
+            if (node.getValue().equals(value))
+                return true;
+        }
+        return end.getValue().equals(value);
     }
 
     public String toString() {
         String str = "[";
-        for (ListNode<E> node = root; node.hasNext(); node = node.getNext())
-            str += node.getValue() + ", ";
-        str += end.getValue() + "]";
+        if (!isEmpty()) {
+            for (ListNode<E> node = root; node.hasNext(); node = node.getNext())
+                str += node.getValue() + ", ";
+            str += end.getValue();
+        }
+        str += "]";
         return str;
     }
 
@@ -219,17 +235,6 @@ public class SuperList<E> {
 
         public boolean hasNext() {
             return next != null && next.getValue() != null;
-        }
-
-        // temporary
-        public String toString() {
-            String str = "";
-            str += hasPrevious() ? previous.getValue() + "" : "null";
-            str += " | ";
-            str += value + "";
-            str += " | ";
-            str += hasNext() ? next.getValue() + "" : "null";
-            return str;
         }
 
     }

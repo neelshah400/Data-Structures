@@ -1,5 +1,3 @@
-import java.util.Collections;
-
 public class Runner {
 
     public Runner() {
@@ -8,6 +6,7 @@ public class Runner {
         String f2 = "%-32s%s";
 
         SuperList<Integer> list = new SuperList<Integer>();
+
         for (int i = 0; i < 30; i++)
             list.add((int) (Math.random() * 1000) + 1);
         System.out.printf(f1, "ArrayList version:", list);
@@ -62,30 +61,90 @@ public class Runner {
         }
         System.out.printf(f1, "Duplicate even numbers:", list);
 
-        oldSize = list.size();
-        for (int i = 0; i < oldSize; i++) {
+        int newSize = list.size();
+        for (int i = 0; i < newSize; i++) {
             int value = list.get(i);
-            if (value % 3 == 0)
+            if (value % 3 == 0) {
                 list.remove(i);
+                newSize--;
+                i--;
+            }
         }
         System.out.printf(f1, "Remove numbers divisible by 3:", list);
 
         list.add(4, 55555);
         System.out.printf(f1, "Insert 55555 at index 4:", list);
 
-//        for (int i = 0; i < list.size() - 1; i++) {
-//            int minIndex = i;
-//            for (int j = i + 1; j < list.size(); j++) {
-//                if (list.get(j) < list.get(minIndex))
-//                    minIndex = j;
-//            }
-//            int temp = list.get(i);
-//            list.remove(i);
-//            list.add(i, list.get(minIndex));
-//            list.remove(minIndex);
-//            list.add(minIndex, temp);
-//        }
-//        System.out.printf(f1, "Sort in ascending order:", list);
+        for (int i = 0; i < list.size() - 1; i++) {
+            int j = i;
+            while (j >= 0 && list.get(j) > list.get(j + 1)) {
+                list.add(j, list.remove(j + 1));
+                j--;
+            }
+        }
+        System.out.printf(f1, "Sort in ascending order:", list);
+
+        double median = 0.0;
+        int size = list.size();
+        if (size % 2 == 1)
+            median = list.get(size / 2);
+        else
+            median = (double) (list.get(size / 2) + list.get((size / 2) - 1)) / 2.0;
+        System.out.printf(f1, "Median:", median);
+
+        int lastIndex = -1;
+        System.out.printf(f2, "Values before median:", "[");
+        for (int i = 0; i < list.size(); i++) {
+            if ((double) list.get(i) < median)
+                System.out.print(list.get(i));
+            else
+                break;
+            if (i + 1 < list.size() && list.get(i + 1) < median)
+                System.out.print(", ");
+            else
+                lastIndex = i;
+        }
+        System.out.println("]");
+
+        System.out.printf(f2, "Values after median:", "[");
+        for (int i = lastIndex + 1; i < list.size() - 1; i++) {
+            if ((double) list.get(i) > median)
+                System.out.print(list.get(i) + ", ");
+        }
+        System.out.println(list.get(list.size() - 1) + "]");
+        System.out.println();
+
+        SuperList<String> list2 = new SuperList<String>();
+
+        String sentence = "The quick brown fox jumps over the lazy dog.";
+        System.out.printf(f1, "Sentence:", sentence);
+
+        sentence = sentence.replaceAll("[^a-zA-Z\\d\\s]", "");
+        String[] words = sentence.split(" ");
+        for (String word : words)
+            list2.add(word);
+        System.out.printf(f1, "Words:", list2);
+
+        for (int i = 0; i < list2.size(); i++) {
+            if (list2.get(i).length() <= 3)
+                list2.remove(i);
+        }
+        System.out.printf(f1, "Remove short words:", list2);
+
+        for (int i = 0; i < list2.size() - 1; i++) {
+            int j = i;
+            while (j >= 0 && list2.get(j).compareToIgnoreCase(list2.get(j + 1)) > 0) {
+                list2.add(j, list2.remove(j + 1));
+                j--;
+            }
+        }
+        System.out.printf(f1, "Sort in ascending order:", list2);
+
+        int sum = 0;
+        for (int i = 0; i < list2.size(); i++)
+            sum += list2.get(i).length();
+        double avg = ((double) sum) / list2.size();
+        System.out.printf(f1, "Average word length:", avg);
 
     }
 
