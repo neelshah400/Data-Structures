@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
 
@@ -26,13 +28,40 @@ public class BowlingTask {
             System.out.println("File not found.");
         }
 
-        for (int score : map.keySet()) {
-            System.out.println(score + ":");
-            PriorityQueue<Bowler> pq = map.get(score);
-            while (!pq.isEmpty())
-                System.out.println("\t" + pq.poll());
+        String str = "{";
+        Iterator<Integer> itr = map.keySet().iterator();
+        while (itr.hasNext()) {
+            int key = itr.next();
+            str += key + "=" + pqToString(map.get(key)) + (itr.hasNext() ? ", " : "}");
         }
+        System.out.println(str);
 
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        System.out.println("+++++++++++++++KEYS++++++++++++++++");
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        for (int key : map.keySet())
+            System.out.println(key);
+
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        System.out.println("+++++++++++++ENTRY SET+++++++++++++");
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        for (int key : map.keySet())
+            System.out.println(key + "=" + pqToString(map.get(key)));
+
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        System.out.println("++++++++++++++VALUES+++++++++++++++");
+        System.out.println("+++++++++++++++++++++++++++++++++++");
+        for (PriorityQueue<Bowler> pq : map.values())
+            System.out.println(pqToString(pq));
+
+    }
+
+    public String pqToString(PriorityQueue<Bowler> pq) {
+        PriorityQueue<Bowler> copy = new PriorityQueue<Bowler>(pq);
+        String str = "[";
+        while (!copy.isEmpty())
+            str += copy.poll() + (copy.isEmpty() ? "]" : ", ");
+        return str;
     }
 
     public static void main(String[] args) {
@@ -58,7 +87,7 @@ public class BowlingTask {
         }
 
         public String toString() {
-            return lastName + ", " + firstName;
+            return firstName + " " + lastName;
         }
 
         public int compareTo(Bowler o) {
