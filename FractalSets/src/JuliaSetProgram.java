@@ -14,6 +14,7 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
     JScrollBar aBar, bBar;
     double a, b;
 
+    float maxIterations;
     DecimalFormat decimalFormat;
 
     public JuliaSetProgram() {
@@ -68,6 +69,9 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
         // making JFrame visible
         frame.setVisible(true);
 
+        // setting maximum iterations
+        maxIterations = 300;
+
         // setting DecimalFormat to show 3 decimal places
         decimalFormat = new DecimalFormat("#.000");
 
@@ -92,7 +96,7 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
 
                 // setting zoom, iterations, zx, and zy
                 int zoom = 1;
-                float iterations = 300;
+                float iterations = maxIterations;
                 double zx = 1.5 * ((x - (0.5 * w)) / (0.5 * zoom * h));
                 double zy = ((y - (0.5 * h)) / (0.5 * zoom * h));
 
@@ -107,9 +111,9 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
                 // setting the color of the pixel at (x, y)
                 int c;
                 if (iterations > 0)
-                    c = Color.HSBtoRGB((iterations / x) % 1, 1, 1);
+                    c = Color.HSBtoRGB((maxIterations / iterations) % 1, 1, 1);
                 else
-                    c = Color.HSBtoRGB(iterations / x, 1, 0);
+                    c = Color.HSBtoRGB(maxIterations / iterations, 1, 0);
                 image.setRGB(x, y, c);
 
             }
