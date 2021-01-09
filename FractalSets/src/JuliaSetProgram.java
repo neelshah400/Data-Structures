@@ -1,21 +1,15 @@
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
-import java.text.DecimalFormat;
 
 public class JuliaSetProgram extends JPanel implements AdjustmentListener {
 
     JFrame frame;
 
-    JLabel aLabel, bLabel;
-    JScrollBar aBar, bBar;
-    double a, b;
-
-    float maxIterations;
-    DecimalFormat decimalFormat;
+    ControlBar a, b, oHue, oSaturation, oBrightness, iHue, iSaturation, iBrightness, zoom, maxIterations;
+    ControlBar[] controlBars;
 
     public JuliaSetProgram() {
 
@@ -25,37 +19,40 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
         frame.setSize(1000, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // initializing EmptyBorder for padding on the right
-        EmptyBorder border = new EmptyBorder(0, 0, 0, 24);
-
-        // setting up control bar for A
-        aBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 6000);
-        aBar.addAdjustmentListener(this);
-        a = aBar.getValue() / 1000.0;
-        aLabel = new JLabel("A: " + a);
-        aLabel.setBorder(border);
-
-        // setting up control bar for B
-        bBar = new JScrollBar(JScrollBar.HORIZONTAL, 0, 0, 0, 6000);
-        bBar.addAdjustmentListener(this);
-        b = bBar.getValue() / 1000.0;
-        bLabel = new JLabel("B: " + b);
-        bLabel.setBorder(border);
+        // setting up control bars
+        a = new ControlBar("A", 0, -2000, 2000, 1000f);
+        b = new ControlBar("B", 0, -2000, 2000, 1000f);
+        oHue = new ControlBar("Hue (Outside)", 0, 0, 1000, 1000f);
+        oSaturation = new ControlBar("Saturation (Outside)", 1000, 0, 1000, 1000f);
+        oBrightness = new ControlBar("Brightness (Outside)", 1000, 0, 1000, 1000f);
+        iHue = new ControlBar("Hue (Inside)", 500, 0, 1000, 1000f);
+        iSaturation = new ControlBar("Saturation (Inside)", 1000, 0, 1000, 1000f);
+        iBrightness = new ControlBar("Brightness (Inside)", 1000, 0, 1000, 1000f);
+        zoom = new ControlBar("Zoom", 1000, 250, 10000, 1000f);
+        maxIterations = new ControlBar("Iterations (Max)", 300, 25, 1000, 1f);
+        controlBars = new ControlBar[]{
+            a, b,
+            oHue, oSaturation, oBrightness,
+            iHue, iSaturation, iBrightness,
+            zoom, maxIterations
+        };
+        for (ControlBar controlBar : controlBars)
+            controlBar.getBar().addAdjustmentListener(this);
 
         // initializing 1 column GridLayout
-        GridLayout grid = new GridLayout(2, 1);
+        GridLayout grid = new GridLayout(controlBars.length, 1);
 
         // adding labels to JPanel with 1 column GridLayout
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(grid);
-        labelPanel.add(aLabel);
-        labelPanel.add(bLabel);
+        for (ControlBar controlBar : controlBars)
+            labelPanel.add(controlBar.getLabel());
 
         // adding scrollbars to JPanel with 1 column GridLayout
         JPanel scrollPanel = new JPanel();
         scrollPanel.setLayout(grid);
-        scrollPanel.add(aBar);
-        scrollPanel.add(bBar);
+        for (ControlBar controlBar : controlBars)
+            scrollPanel.add(controlBar.getBar());
 
         // adding panels to bigger JPanel with BorderLayout
         JPanel bigPanel = new JPanel();
@@ -68,12 +65,6 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
 
         // making JFrame visible
         frame.setVisible(true);
-
-        // setting maximum iterations
-        maxIterations = 300;
-
-        // setting DecimalFormat to show 3 decimal places
-        decimalFormat = new DecimalFormat("#.000");
 
     }
 
@@ -94,16 +85,15 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
         for (int x = 0; x < w; x++) { // loop through thw width of the window
             for (int y = 0; y < h; y++) { // loop through the height of the window
 
-                // setting zoom, iterations, zx, and zy
-                int zoom = 1;
-                float iterations = maxIterations;
-                double zx = 1.5 * ((x - (0.5 * w)) / (0.5 * zoom * h));
-                double zy = ((y - (0.5 * h)) / (0.5 * zoom * h));
+                // setting iterations, zx, and zy
+                float iterations = maxIterations.getValue();
+                double zx = 1.5 * ((x - (0.5 * w)) / (0.5 * zoom.getValue() * w));
+                double zy = ((y - (0.5 * h)) / (0.5 * zoom.getValue() * h));
 
                 // pre-test loop
                 while ((zx * zx) + (zy * zy) < 6.0 && iterations > 0) {
-                    double temp = (zx * zx) - (zy * zy) + a;
-                    zy = (2 * zx * zy) + b;
+                    double temp = (zx * zx) - (zy * zy) + a.getValue();
+                    zy = (2 * zx * zy) + b.getValue();
                     zx = temp;
                     iterations--;
                 }
@@ -111,9 +101,9 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
                 // setting the color of the pixel at (x, y)
                 int c;
                 if (iterations > 0)
-                    c = Color.HSBtoRGB((maxIterations / iterations) % 1, 1, 1);
+                    c = Color.HSBtoRGB(oHue.getValue() * (maxIterations.getValue() / iterations) % 1, oSaturation.getValue(), oBrightness.getValue());
                 else
-                    c = Color.HSBtoRGB(maxIterations / iterations, 1, 0);
+                    c = Color.HSBtoRGB(iHue.getValue(), iSaturation.getValue(), iBrightness.getValue());
                 image.setRGB(x, y, c);
 
             }
@@ -124,21 +114,11 @@ public class JuliaSetProgram extends JPanel implements AdjustmentListener {
     }
 
     public void adjustmentValueChanged(AdjustmentEvent e) {
-
-        // adjusting the value of A
-        if (e.getSource() == aBar) {
-            a = aBar.getValue() / 1000.0;
-            aLabel.setText("A: " + decimalFormat.format(a));
+        for (ControlBar controlBar : controlBars) {
+            if (e.getSource() == controlBar.getBar())
+                controlBar.update();
         }
-
-        // adjusting the value of B
-        if (e.getSource() == bBar) {
-            b = bBar.getValue() / 1000.0;
-            bLabel.setText("B: " + decimalFormat.format(b));
-        }
-
         repaint();
-
     }
 
     public static void main(String[] args) {
