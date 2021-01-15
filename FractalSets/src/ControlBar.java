@@ -1,11 +1,9 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.text.DecimalFormat;
 
 public class ControlBar {
 
-    private EmptyBorder border = null;
-    private DecimalFormat decimalFormat;
+    private EmptyBorder border;
 
     private String name;
     private int initial;
@@ -19,8 +17,7 @@ public class ControlBar {
 
     public ControlBar(String name, int initial, int min, int max, float divisor) {
 
-        border = new EmptyBorder(0, 0, 0, 24);
-        decimalFormat = new DecimalFormat("#.000");
+        border = new EmptyBorder(0, 0, 0, 32);
 
         this.name = name;
         this.initial = initial;
@@ -30,14 +27,14 @@ public class ControlBar {
 
         bar = new JScrollBar(JScrollBar.HORIZONTAL, initial, 0, min, max);
         value = bar.getValue() / divisor;
-        label = new JLabel(name + ": " + decimalFormat.format(value));
+        label = new JLabel(name + ": " + value);
         label.setBorder(border);
 
     }
 
     public void update() {
         value = bar.getValue() / divisor;
-        label.setText(name + ": " + decimalFormat.format(value));
+        label.setText(name + ": " + value);
     }
 
     public JScrollBar getBar() {
@@ -50,6 +47,10 @@ public class ControlBar {
 
     public JLabel getLabel() {
         return label;
+    }
+
+    public int getInitial() {
+        return initial;
     }
 
 }
