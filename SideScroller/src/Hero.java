@@ -148,7 +148,7 @@ public class Hero {
             case "bottom":
                 x = this.x;
                 y = this.y + (runningCoordinates[0][3] * 2) - 1;
-                width = runningCoordinates[runningCount][2] * 2;
+                width = runningCoordinates[0][2] * 2;
                 height = 2;
                 break;
             case "right":

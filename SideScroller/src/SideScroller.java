@@ -3,7 +3,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class SideScroller extends JPanel implements Runnable, KeyListener {
 
@@ -37,7 +35,7 @@ public class SideScroller extends JPanel implements Runnable, KeyListener {
         frame = new JFrame("Aladdin's Not-So-Exciting Adventure");
         frame.add(this);
 
-        map = new HashMap<Integer, ArrayList<Block>>();
+        map = new HashMap<>();
 
         count = 0;
         smallCityCount = 0;
@@ -61,7 +59,7 @@ public class SideScroller extends JPanel implements Runnable, KeyListener {
                 for (int x = 0; x < pieces.length; x++) {
                     if (pieces[x].equals("B")) {
                         if (!map.containsKey(x))
-                            map.put(x, new ArrayList<Block>());
+                            map.put(x, new ArrayList<>());
                         map.get(x).add(new Block(50 * x, 50 * row + 10, 50, 50));
                     }
                 }
@@ -154,19 +152,18 @@ public class SideScroller extends JPanel implements Runnable, KeyListener {
             try {
                 for (Block block : map.get(col))
                     g.drawImage(blockImage, block.getX(), block.getY(), this);
-            } catch (NullPointerException e) {
+            } catch (NullPointerException ignored) {
 
             }
         }
-        System.out.println(hero.getColumn());
         if (hero.isJumping() || hero.isFalling())
             g.drawImage(jumpingImages[hero.getJumpingCount()], hero.getX(), hero.getY(), this);
         else
             g.drawImage(runningImages[hero.getRunningCount()], hero.getX(), hero.getY(), this);
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(Color.BLUE);
-        for (String str : new String[] {"top", "bottom", "right", "left"})
-            g2.draw(hero.getEdge(str));
+//        Graphics2D g2 = (Graphics2D) g;
+//        g2.setColor(Color.BLUE);
+//        for (String str : new String[] {"top", "bottom", "right", "left"})
+//            g2.draw(hero.getEdge(str));
     }
 
     public void run() {
@@ -188,22 +185,10 @@ public class SideScroller extends JPanel implements Runnable, KeyListener {
                             if (hero.getEdge("left").intersects(block.getCollisionBox()))
                                 leftCollision = true;
                         }
-                    } catch (NullPointerException e) {
+                    } catch (NullPointerException ignored) {
 
                     }
                 }
-//                for (ArrayList<Block> list : map.values()) {
-//                    for (Block block : list) {
-//                        if (hero.getEdge("top").intersects(block.getCollisionBox()))
-//                            topCollision = true;
-//                        if (hero.getEdge("bottom").intersects(block.getCollisionBox()))
-//                            bottomCollision = true;
-//                        if (hero.getEdge("right").intersects(block.getCollisionBox()))
-//                            rightCollision = true;
-//                        if (hero.getEdge("left").intersects(block.getCollisionBox()))
-//                            leftCollision = true;
-//                    }
-//                }
 
                 if (topCollision) {
                     hero.setJumping(false);
